@@ -1,47 +1,61 @@
 import React from "react";
+import { useState } from "react";
 
-const BusinessInfo = ({ onInputChange }) => {
+const BusinessInfo = (restaurantMenu) => {
   const handleNameChange = (e) => {
-    onInputChange("businessName", e.target.value);
+    restaurantMenu.onInputChange("businessName", e.target.value);
   };
 
   const handleDescriptionChange = (e) => {
-    onInputChange("description", e.target.value);
+    restaurantMenu.onInputChange("description", e.target.value);
   };
 
   return (
-    <div className="grid gap-6 mb-6 md:grid-cols-2">
-      <div>
+    <div className=" flex-col flex w-full md:grid-cols-1 items-center justify-center">
+      <div className="max-w-md px-4 mx-auto ">
         <label
-          htmlFor="business_name"
-          className="block mb-2 text-sm font-medium text-gray-900 :text-white"
+          for="username"
+          className="block mt-5 mb-2 text-sm font-medium text-gray-900 "
         >
-          İş Yeri Adı
+          Business Name
         </label>
-        <input
-          type="text"
-          id="business_name"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 :bg-gray-700 :border-gray-600 :placeholder-gray-400 :text-white :focus:ring-blue-500 :focus:border-blue-500"
-          placeholder="Daisy Coffee"
-          onChange={handleNameChange}
-          required
-        />
+        <div className="flex items-center bg-white  border rounded-md">
+          <input
+            type="text"
+            value={restaurantMenu.restaurantMenu.businessName}
+            id="business_name"
+            className="w-full p-2.5 bg-transparent outline-none bg-white rounded-md"
+            placeholder="Required"
+            onChange={handleNameChange}
+          />
+        </div>
       </div>
-      <div>
+      <div className="max-w-md px-4 mx-auto mt-3">
         <label
-          htmlFor="desc"
-          className="block mb-2 text-sm font-medium text-gray-900 :text-white"
+          for="username"
+          className="block mt-5 mb-2 text-sm font-medium text-gray-900 "
         >
-          Açıklama / Bilgi
+          Business Description
         </label>
-        <input
-          type="text"
-          id="desc"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 :bg-gray-700 :border-gray-600 :placeholder-gray-400 :text-white :focus:ring-blue-500 :focus:border-blue-500"
-          onChange={handleDescriptionChange}
-          placeholder="İçinizi ısıtacak kahveler.."
-        />
+        <div className="flex items-center bg-white  border rounded-md">
+          <input
+            type="text"
+            value={restaurantMenu.restaurantMenu.description}
+            id="desc"
+            className="w-full p-2.5 bg-transparent outline-none rounded-md bg-white"
+            onChange={handleDescriptionChange}
+            placeholder="Optional"
+          />
+        </div>
       </div>
+      {restaurantMenu.restaurantMenu.businessName.trim() == "" && (
+        <label
+          htmlFor="categoryInput"
+          className="block mt-2 mb-2 text-sm font-medium text-red-400 mr-auto ml-4"
+        >
+          Add a Business Name.
+        </label>
+      )}
     </div>
   );
 };

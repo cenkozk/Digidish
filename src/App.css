@@ -1,8 +1,13 @@
-.cropper-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
-  /* Add any additional styles as needed */
+.sticky-nav {
+  animation: sticky-nav 300ms;
+}
+
+@keyframes sticky-nav {
+  0% {
+    transform: translateY(-6em);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
-import BusinessInfo from "./components/BusinessInfo";
-import Categories from "./components/Categories";
+import { supabase } from "../Supabase";
+import Categories from "./Categories";
 import imageCompression from "browser-image-compression"; // Import image compression library
+import BusinessInfo from "./BusinessInfo";
+import { AnimatePresence, motion } from "framer-motion";
+import { nanoid } from "nanoid";
 
-function CreateMenu() {
+function CreateMenu(steps) {
   /*useEffect(() => {
     //fetchRestaurantMenu("-N5RWDD");
   }, []);
@@ -164,8 +166,8 @@ function CreateMenu() {
 
   async function resizeAndCompressImage(file) {
     // Define the desired width and height for the resized image
-    const maxWidth = 360;
-    const maxHeight = 360;
+    const maxWidth = 240;
+    const maxHeight = 240;
 
     // Compress the image using imageCompression library
     const compressedImage = await imageCompression(file, {
@@ -296,151 +298,334 @@ function CreateMenu() {
     });
   };
 
+  //////////////////////////////////////////////////////
+
+  const isStepValid = (step) => {
+    switch (step) {
+      case 1:
+        return restaurantMenu.businessName.trim() !== "";
+      case 2:
+        return restaurantMenu.categories.length > 0;
+      case 3:
+        return restaurantMenu.categories.some(
+          (category) => category.dishes.length > 0
+        );
+      default:
+        return false;
+    }
+  };
+
+  const handleNextStep = () => {
+    if (isStepValid(steps.steps.currentStep)) {
+      //Initialize the selected category on first step 3.
+      if (steps.steps.currentStep + 1 == 3) {
+        if (selectedCategory == null) {
+          setSelectedCategory(0);
+        }
+      }
+
+      steps.handleSteps(1);
+    } else {
+      console.log(restaurantMenu.businessName, restaurantMenu.description);
+      // Handle invalid step, show error message, etc.
+    }
+  };
+
+  const handlePreviousStep = () => {
+    steps.handleSteps(-1);
+  };
+
+  ///////////////////////////////////////////////////////
+
   return (
     <div>
-      <div className="w-[100vw] flex flex-col justify-center items-center mt-10 gap-10">
+      <div className="w-auto flex flex-col justify-center items-center gap-10 mt-12 divide-y-2">
         <div>
-          <BusinessInfo onInputChange={handleInputChange} />
-          <hr class="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
-          <Categories
-            categories={restaurantMenu.categories}
-            newCategory={newCategory}
-            handleDeleteCategory={handleDeleteCategory}
-            handleAddCategory={handleAddCategory}
-            handleCategorySelection={handleCategorySelection}
-            selectedCategory={selectedCategory}
-            setNewCategory={setNewCategory}
-            handleCategoryNameChange={handleCategoryNameChange}
-          />
-          {selectedCategory !== null && (
-            <div>
-              <label
-                htmlFor={`category${selectedCategory}`}
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                {categories[selectedCategory]}
-              </label>
-              {restaurantMenu.categories[selectedCategory].dishes.map(
-                (dish, dishIndex) => (
-                  <div key={dishIndex} className="grid grid-cols-3 gap-4">
-                    <div className="col-span-2">
-                      <label
-                        htmlFor={`dishName_${selectedCategory}_${dishIndex}`}
-                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Dish Name
-                      </label>
-                      <input
-                        type="text"
-                        id={`dishName_${selectedCategory}_${dishIndex}`}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        placeholder="Enter dish name"
-                        value={dish.name}
-                        onChange={(e) =>
-                          handleDishNameChange(
-                            selectedCategory,
-                            dishIndex,
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor={`dishDescription_${selectedCategory}_${dishIndex}`}
-                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Dish Description
-                      </label>
-                      <input
-                        type="text"
-                        id={`dishDescription_${selectedCategory}_${dishIndex}`}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                        placeholder="Enter dish description"
-                        value={dish.description}
-                        onChange={(e) =>
-                          handleDishDescriptionChange(
-                            selectedCategory,
-                            dishIndex,
-                            e.target.value
-                          )
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor={`dishImage_${selectedCategory}_${dishIndex}`}
-                        className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Dish Image
-                      </label>
-                      <div className="flex items-center">
-                        <input
-                          type="file"
-                          id={`dishImage_${selectedCategory}_${dishIndex}`}
-                          accept="image/*"
-                          onChange={(e) =>
-                            handleImageUpload(e, selectedCategory, dishIndex)
-                          }
-                        />
-                        {restaurantMenu.categories[selectedCategory].dishes[
-                          dishIndex
-                        ].image_url && (
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                restaurantMenu.categories[selectedCategory]
-                                  .dishes[dishIndex].image_url
-                              }
-                              alt="Dish"
-                              className="w-24 h-24 object-cover rounded-md ml-4"
-                            />
-                            <button
-                              onClick={() =>
-                                handleDeleteImage(selectedCategory, dishIndex)
-                              }
-                              className="text-red-500 ml-2 focus:outline-none"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M9.293 10l-2.147 2.146a.5.5 0 00.708.708L10 10.707l2.147 2.147a.5.5 0 00.708-.708L10.707 10l2.147-2.146a.5.5 0 00-.708-.708L10 9.293 7.853 7.146a.5.5 0 00-.708.708L9.293 10zM10 2a8 8 0 100 16 8 8 0 000-16zm0 1a7 7 0 110 14A7 7 0 0110 3z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="col-span-3 flex items-center justify-end">
+          {steps.steps.currentStep == 1 && (
+            <motion.div
+              key="1"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.3 }}
+            >
+              <BusinessInfo
+                onInputChange={handleInputChange}
+                restaurantMenu={restaurantMenu}
+              />
+            </motion.div>
+          )}
+          {steps.steps.currentStep == 2 && (
+            <motion.div
+              key="2"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Categories
+                categories={restaurantMenu.categories}
+                newCategory={newCategory}
+                handleDeleteCategory={handleDeleteCategory}
+                handleAddCategory={handleAddCategory}
+                handleCategorySelection={handleCategorySelection}
+                selectedCategory={selectedCategory}
+                setNewCategory={setNewCategory}
+                handleCategoryNameChange={handleCategoryNameChange}
+              />
+            </motion.div>
+          )}
+          {steps.steps.currentStep == 3 && (
+            <motion.div
+              key={"test"}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className=" w-auto flex flex-col items-center justify-center ">
+                <div className="mb-6">
+                  <label
+                    htmlFor="categories"
+                    className="block mb-2 text-sm font-medium text-gray-900"
+                  >
+                    Edit Dishes On Category
+                  </label>
+                  <div className="flex gap-2">
+                    {restaurantMenu.categories.map((category, index) => (
                       <button
-                        onClick={() =>
-                          handleDeleteDish(selectedCategory, dishIndex)
-                        }
-                        className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-2 py-1 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+                        key={index}
+                        onClick={() => handleCategorySelection(index)}
+                        className={`px-3 py-1 rounded-lg duration-150  active:bg-orange-400  ${
+                          selectedCategory == index
+                            ? "bg-orange-400 text-white hover:bg-orange-300"
+                            : "bg-white text-gray-900 border hover:bg-gray-200"
+                        }`}
                       >
-                        Delete
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {selectedCategory !== null && (
+                  <div className="flex flex-col mt-2 justify-center items-center divide-y-2">
+                    <label
+                      htmlFor={`category${selectedCategory}`}
+                      className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >
+                      {categories[selectedCategory]}
+                    </label>
+                    <AnimatePresence className="divide-y-2">
+                      {restaurantMenu.categories[selectedCategory].dishes.map(
+                        (dish, dishIndex) => (
+                          <motion.div
+                            key={dishIndex}
+                            className="flex flex-col items-center justify-center gap-6"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.7 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <hr className="w-full" />
+                            <div className="flex flex-auto gap-10">
+                              <div className="col-span-2">
+                                <label
+                                  htmlFor={`dishName_${selectedCategory}_${dishIndex}`}
+                                  className="block mb-2 text-sm font-medium text-gray-900 pt-3"
+                                >
+                                  Dish Name
+                                </label>
+                                <input
+                                  type="text"
+                                  id={`dishName_${selectedCategory}_${dishIndex}`}
+                                  className="w-auto p-2.5  bg-transparent border outline-none bg-white rounded-md"
+                                  placeholder="Enter dish name"
+                                  value={dish.name}
+                                  onChange={(e) =>
+                                    handleDishNameChange(
+                                      selectedCategory,
+                                      dishIndex,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  htmlFor={`dishDescription_${selectedCategory}_${dishIndex}`}
+                                  className="block mb-2 text-sm font-medium text-gray-900 pt-3"
+                                >
+                                  Dish Description
+                                </label>
+                                <input
+                                  type="text"
+                                  id={`dishDescription_${selectedCategory}_${dishIndex}`}
+                                  className="w-auto p-2.5  bg-transparent border outline-none bg-white rounded-md"
+                                  placeholder="Enter dish description"
+                                  value={dish.description}
+                                  onChange={(e) =>
+                                    handleDishDescriptionChange(
+                                      selectedCategory,
+                                      dishIndex,
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex w-full flex-row gap-2 items-center justify-center">
+                              <div className="flex flex-row justify-center items-center mb-6 gap-2">
+                                <label
+                                  htmlFor={`dishImage_${selectedCategory}_${dishIndex}`}
+                                  className="block text-sm font-medium text-gray-900"
+                                >
+                                  Dish Image
+                                </label>
+                                <div className=" w-auto">
+                                  <label class="flex justify-center w-full h-auto px-2 py-1 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                                    <span class="flex items-center space-x-2">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-5 h-5 text-gray-600"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                      >
+                                        <path
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        />
+                                      </svg>
+                                    </span>
+                                    <input
+                                      type="file"
+                                      name="file_upload"
+                                      class="hidden"
+                                      id={`dishImage_${selectedCategory}_${dishIndex}`}
+                                      accept="image/*"
+                                      onChange={(e) =>
+                                        handleImageUpload(
+                                          e,
+                                          selectedCategory,
+                                          dishIndex
+                                        )
+                                      }
+                                    />
+                                  </label>
+                                </div>
+
+                                {restaurantMenu.categories[selectedCategory]
+                                  .dishes[dishIndex].image_url && (
+                                  <div className="flex items-center flex-row ml-2">
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteImage(
+                                          selectedCategory,
+                                          dishIndex
+                                        )
+                                      }
+                                      className="px-0 py-0 text-white fill-white bg-red-500 rounded-lg duration-150 hover:bg-red-400 active:bg-red-500"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4 m-1.5"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          fillRule="none"
+                                          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+                                          clipRule="evenodd"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <img
+                                      src={
+                                        restaurantMenu.categories[
+                                          selectedCategory
+                                        ].dishes[dishIndex].image_url
+                                      }
+                                      alt="Dish"
+                                      className="w-10 h-10 object-cover rounded-md ml-4"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                onClick={() =>
+                                  handleDeleteDish(selectedCategory, dishIndex)
+                                }
+                                className="px-2 py-2 text-white bg-red-500 rounded-lg duration-150 hover:bg-red-400 active:bg-red-500 ml-auto"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
+                                  className="w-5 h-5"
+                                >
+                                  <path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12M8 9h8v10H8V9m7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </motion.div>
+                        )
+                      )}
+                    </AnimatePresence>
+                    <div className="flex justify-end mt-4">
+                      <button
+                        onClick={() => handleAddDish(selectedCategory)}
+                        className="px-6 py-1.5 w-auto mt-10 text-white bg-gray-800 rounded-lg duration-150 hover:bg-gray-600 active:shadow-lg items-center justify-center flex"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          className="w-5 h-5 mr-1 m-0"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M12 5.25a.75.75 0 01.75.75v5.25H18a.75.75 0 010 1.5h-5.25V18a.75.75 0 01-1.5 0v-5.25H6a.75.75 0 010-1.5h5.25V6a.75.75 0 01.75-.75z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Add Dish
                       </button>
                     </div>
                   </div>
-                )
-              )}
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => handleAddDish(selectedCategory)}
-                  className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-2 py-1 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-                >
-                  Add Dish
-                </button>
+                )}
               </div>
-            </div>
+            </motion.div>
           )}
+          {steps.steps.currentStep == 4 && (
+            <motion.div
+              key="4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div>Step 4 Content</div>
+            </motion.div>
+          )}
+        </div>
+        <div className="flex flex-row gap-16 pb-24">
+          <button
+            onClick={() => {
+              handlePreviousStep();
+            }}
+            className="px-6 py-1.5 w-[70px] mt-10 text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
+          >
+            Prev
+          </button>
+          <button
+            onClick={() => {
+              handleNextStep();
+            }}
+            className="px-6 py-1.5 w-[70px] mt-10 text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
