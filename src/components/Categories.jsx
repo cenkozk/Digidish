@@ -77,7 +77,7 @@ const Categories = ({
             <input
               type="text"
               id="categoryInput"
-              className="w-full p-2.5 bg-transparent border outline-none bg-white rounded-md"
+              className="w-full p-2.5 border outline-none rounded-md"
               placeholder="Soğuk içecekler"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}

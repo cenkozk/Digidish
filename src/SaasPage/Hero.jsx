@@ -169,12 +169,16 @@ function Hero() {
                   </svg>
                 </p>
               </a>
-              <h1 className="text-4xl text-gray-800 font-extrabold sm:text-5xl">
-                Ignite Your Restaurant's Potential with DigiDish for Free!
+              <h1 className="text-4xl text-gray-800 font-extrabold sm:text-5xl z-20">
+                Ignite Your Restaurant's Potential with{" "}
+                <span class="relative">
+                  <span class="text-orange-400 z-20 relative"> Digidish </span>
+                </span>
+                for Free!
               </h1>
               <p>
                 Simplify your menu management and delight your diners with
-                DigiDish. Our intuitive platform empowers restaurants of all
+                Digidish. Our intuitive platform empowers restaurants of all
                 sizes to create stunning digital menus effortlessly.
               </p>
               <div className="flex items-center gap-x-3 sm:text-sm">

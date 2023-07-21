@@ -70,10 +70,10 @@ function Features() {
         <div className="relative max-w-2xl mx-auto sm:text-center">
           <div className="relative z-10">
             <h3 className="text-gray-800 text-3xl font-semibold sm:text-4xl">
-              Ignite Your DigiDish Experience
+              Ignite Your Digidish Experience
             </h3>
             <p className="mt-3">
-              Unleash the power of DigiDish with these outstanding features.
+              Unleash the power of Digidish with these outstanding features.
             </p>
           </div>
           <div

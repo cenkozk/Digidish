@@ -8,9 +8,19 @@ import { AnimatePresence, motion } from "framer-motion";
 import { nanoid } from "nanoid";
 
 function CreateMenu(steps) {
-  /*useEffect(() => {
-    //fetchRestaurantMenu("-N5RWDD");
-  }, []);
+  // Cloudinary configuration
+  const cloudName = "dewy2csvc";
+  const uploadPreset = "ml_default"; // Replace with your Cloudinary upload preset
+
+  const [restaurantMenu, setRestaurantMenu] = useState({
+    businessName: "",
+    description: "",
+    categories: [],
+  });
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [imageUploadingAnimations, setImageUploadingAnimations] = useState([]);
 
   async function fetchRestaurantMenu(restaurantId) {
     try {
@@ -36,36 +46,79 @@ function CreateMenu(steps) {
     }
   }
 
+  async function uploadRestaurantMenu(
+    restaurantId,
+    menuJson,
+    userId,
+    paidPlan
+  ) {
+    try {
+      // Check if the restaurant exists in the database
+      const { data: restaurantData, error: restaurantError } = await supabase
+        .from("menu")
+        .select("id")
+        .eq("id", restaurantId)
+        .single();
+
+      if (restaurantError) {
+        console.error("Error checking restaurant existence:", restaurantError);
+      }
+
+      console.log(restaurantId, menuJson, userId, paidPlan);
+
+      if (restaurantData === null) {
+        // Restaurant does not exist, perform an insert to create a new record
+        const { data: newData, error: newError } = await supabase
+          .from("menu")
+          .insert([{ id: restaurantId, menuJson: menuJson }]);
+
+        if (newError) {
+          console.error("Error creating new restaurant:", newError);
+          return;
+        }
+
+        console.log("New restaurant menu uploaded successfully.");
+      } else {
+        // Restaurant exists, perform an update
+        const { data: updateData, error: updateError } = await supabase
+          .from("menu")
+          .update({ menuJson: menuJson })
+          .eq("id", restaurantId);
+
+        if (updateError) {
+          console.error("Error updating restaurant menu:", updateError);
+          return;
+        }
+
+        console.log("Restaurant menu updated successfully.");
+      }
+
+      // Now update the user data with the corresponding restaurantId and paidPlan
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .update({ restaurant_id: restaurantId, paid_plan: paidPlan })
+        .eq("id", userId);
+
+      if (userError) {
+        console.error("Error updating user data:", userError);
+        return;
+      }
+
+      console.log("User data updated successfully.");
+    } catch (error) {
+      console.error("Error uploading restaurant menu:", error);
+    }
+  }
+
   useEffect(() => {
     if (restaurantMenu != null) {
       console.log(restaurantMenu);
     }
   }, [restaurantMenu]);
 
-  /*if (!restaurantMenu) {
-    return <div>Loading...</div>;
-  }*/
-
-  // Access the variables from the fetched restaurant menu
-  //const restaurantName = restaurantMenu.restaurantName;
-  //const categories = restaurantMenu.categories;
-
-  // Cloudinary configuration
-  const cloudName = "dewy2csvc";
-  const uploadPreset = "ml_default"; // Replace with your Cloudinary upload preset
-
-  const [restaurantMenu, setRestaurantMenu] = useState({
-    businessName: "",
-    description: "",
-    categories: [],
-  });
-  const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
   useEffect(() => {
-    console.log(restaurantMenu);
-  }, [restaurantMenu]);
+    fetchRestaurantMenu(steps.restaurantId);
+  }, []);
 
   const handleAddCategory = (e) => {
     e.preventDefault();
@@ -123,6 +176,10 @@ function CreateMenu(steps) {
 
   const handleImageUpload = async (event, categoryIndex, dishIndex) => {
     var file = event.target.files[0];
+    setImageUploadingAnimations((prevAnimations) => [
+      ...prevAnimations,
+      categoryIndex + dishIndex,
+    ]);
 
     file = await resizeAndCompressImage(file);
 
@@ -145,6 +202,12 @@ function CreateMenu(steps) {
         const publicId = data.public_id;
         const deleteToken = data.delete_token;
 
+        setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter(
+            (animationIndex) => animationIndex !== categoryIndex + dishIndex
+          )
+        );
+
         setRestaurantMenu((prevMenu) => {
           const updatedCategories = [...prevMenu.categories];
           updatedCategories[categoryIndex].dishes[dishIndex].image_url =
@@ -158,6 +221,11 @@ function CreateMenu(steps) {
         });
       } else {
         console.error("Error uploading image:", response.status);
+        setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter(
+            (animationIndex) => animationIndex !== categoryIndex + dishIndex
+          )
+        );
       }
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -247,6 +315,14 @@ function CreateMenu(steps) {
         });
       } else {
         console.error("Error deleting image:", response.status);
+        setRestaurantMenu((prevMenu) => {
+          const updatedCategories = [...prevMenu.categories];
+          updatedCategories[categoryIndex].dishes[dishIndex].image_url = "";
+          updatedCategories[categoryIndex].dishes[dishIndex].public_id = "";
+          updatedCategories[categoryIndex].dishes[dishIndex].delete_token = "";
+
+          return { ...prevMenu, categories: updatedCategories };
+        });
       }
     } catch (error) {
       console.error("Error deleting image:", error);
@@ -307,9 +383,17 @@ function CreateMenu(steps) {
       case 2:
         return restaurantMenu.categories.length > 0;
       case 3:
-        return restaurantMenu.categories.some(
-          (category) => category.dishes.length > 0
-        );
+        // Check if every dish in the categories is valid
+        return restaurantMenu.categories.every((category) => {
+          return (
+            category.dishes.length > 0 &&
+            category.dishes.every((dish) => {
+              return (
+                dish.name.trim() !== "" && dish.hasOwnProperty("description")
+              ); // You can add more checks for the image in the future
+            })
+          );
+        });
       default:
         return false;
     }
@@ -516,7 +600,29 @@ function CreateMenu(steps) {
                                     />
                                   </label>
                                 </div>
-
+                                {imageUploadingAnimations.includes(
+                                  selectedCategory + dishIndex
+                                ) && (
+                                  <div role="status">
+                                    <svg
+                                      aria-hidden="true"
+                                      class="w-5 h-5 mr-2 text-gray-200 animate-spin fill-orange-400"
+                                      viewBox="0 0 100 101"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                        fill="currentColor"
+                                      />
+                                      <path
+                                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                        fill="currentFill"
+                                      />
+                                    </svg>
+                                    <span class="sr-only">Loading...</span>
+                                  </div>
+                                )}
                                 {restaurantMenu.categories[selectedCategory]
                                   .dishes[dishIndex].image_url && (
                                   <div className="flex items-center flex-row ml-2">
@@ -605,27 +711,106 @@ function CreateMenu(steps) {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <div>Step 4 Content</div>
+              <div>
+                <div class="bg-white border border-gray-200  rounded-lg p-8 md:p-12 mb-8 scale-90">
+                  <a
+                    href="#"
+                    class="bg-green-300 text-gray-900 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md "
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      height="1em"
+                      width="1em"
+                      className="mr-1"
+                    >
+                      <path fill="none" d="M0 0h24v24H0z" />
+                      <path d="M4.222 3.808l6.717 6.717-2.828 2.829-3.89-3.89a4 4 0 010-5.656zm10.046 8.338l-.854.854 7.071 7.071-1.414 1.414L12 14.415l-7.071 7.07-1.414-1.414 9.339-9.339c-.588-1.457.02-3.555 1.62-5.157 1.953-1.952 4.644-2.427 6.011-1.06s.892 4.058-1.06 6.01c-1.602 1.602-3.7 2.21-5.157 1.621z" />
+                    </svg>
+                    You successfuly created your menu!
+                  </a>
+                  <h1 class="text-gray-900  text-3xl md:text-5xl font-extrabold mb-2">
+                    Great job! You have successfully completed the process of
+                    creating your menu.
+                  </h1>
+                  <p class="text-lg font-normal text-gray-500 mb-6">
+                    Now, by clicking the "Create" button, you can save your
+                    changes and finalize your menu.
+                  </p>
+                  <button
+                    onClick={() => {
+                      uploadRestaurantMenu(
+                        steps.restaurantId,
+                        restaurantMenu,
+                        steps.user.id,
+                        steps.paidPlan
+                      );
+                    }}
+                    class="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center text-white rounded-lg bg-green-400 hover:bg-green-300 focus:bg-green-400"
+                  >
+                    Create
+                    <svg
+                      class="w-3.5 h-3.5 ml-2"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 14 10"
+                    >
+                      <path
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M1 5h12m0 0L9 1m4 4L9 9"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
         </div>
-        <div className="flex flex-row gap-16 pb-24">
-          <button
-            onClick={() => {
-              handlePreviousStep();
-            }}
-            className="px-6 py-1.5 w-[70px] mt-10 text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
-          >
-            Prev
-          </button>
-          <button
-            onClick={() => {
-              handleNextStep();
-            }}
-            className="px-6 py-1.5 w-[70px] mt-10 text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
-          >
-            Next
-          </button>
+        <div className="flex flex-col justify-center items-center pb-24">
+          {!restaurantMenu.categories.every((category) => {
+            return (
+              category.dishes.length > 0 &&
+              category.dishes.every((dish) => {
+                return (
+                  dish.name.trim() !== "" && dish.hasOwnProperty("description")
+                );
+              })
+            );
+          }) &&
+            steps.steps.currentStep == 3 && (
+              <label
+                htmlFor="categoryInput"
+                className="block mt-2 h-full text-sm font-medium text-red-400 "
+              >
+                Add a Dish, and name each Dish.
+              </label>
+            )}
+          <div className="flex flex-row gap-10 mt-10">
+            {!(steps.steps.currentStep == 1) && (
+              <button
+                onClick={() => {
+                  handlePreviousStep();
+                }}
+                className="px-6 py-1.5 w-[70px] text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
+              >
+                Previous
+              </button>
+            )}
+            {!(steps.steps.currentStep == 4) && (
+              <button
+                onClick={() => {
+                  handleNextStep();
+                }}
+                className="px-6 py-1.5 w-[70px] text-white bg-orange-400 rounded-lg duration-150 hover:bg-orange-300 active:shadow-lg items-center justify-center flex"
+              >
+                Next
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

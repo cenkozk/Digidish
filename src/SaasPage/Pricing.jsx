@@ -51,7 +51,7 @@ function Pricing() {
           </p>
           <div className="max-w-xl">
             <p>
-              Enjoy the full DigiDish experience with our forever free plan. No
+              Enjoy the full Digidish experience with our forever free plan. No
               strings attached.
             </p>
           </div>
