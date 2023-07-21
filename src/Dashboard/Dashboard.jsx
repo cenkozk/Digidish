@@ -8,6 +8,10 @@ import CreateMenu from "../components/CreateMenu";
 import Steps from "./Steps";
 import CheckUser from "./CheckUser";
 import { nanoid } from "nanoid";
+import CreateMenuDashboard from "./CreateMenuDashboard";
+import HomeDashboard from "./HomeDashboard";
+import QRLinks from "./QRLinks";
+import Plans from "./Plans";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -25,10 +29,8 @@ function Dashboard() {
       sub: "",
     },
   });
-
   const [restaurantId, setRestaurantId] = useState(null);
   const [paidPlan, setPaidPlan] = useState(null);
-
   const [sidebar, setSidebar] = useState(false);
 
   useEffect(() => {
@@ -45,8 +47,6 @@ function Dashboard() {
   }, []);
 
   const [isAbove800px, setIsAbove800px] = useState(window.innerWidth > 800);
-  const clampNumber = (num, a, b) =>
-    Math.max(Math.min(num, Math.max(a, b)), Math.min(a, b));
 
   // Add event listener to update the state when the window is resized
   useEffect(() => {
@@ -61,24 +61,6 @@ function Dashboard() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  const [steps, setStep] = useState({
-    stepsItems: ["Information", "Categories", "Dishes", "Complete"],
-    currentStep: 1,
-  });
-
-  console.log(restaurantId);
-
-  //////////////////////////////////////////////////////////////////////
-
-  const handleSteps = (num) => {
-    setStep((prevSteps) => {
-      return {
-        ...prevSteps,
-        currentStep: clampNumber(steps.currentStep + num, 1, 5),
-      };
-    });
-  };
 
   const handleLogout = async () => {
     try {
@@ -98,15 +80,35 @@ function Dashboard() {
     }
   };
 
-  const createMenuId = () => {
-    setRestaurantId(nanoid(6));
-  };
-
   //////////////////////////////////////////////////////////////////////
+
+  const [selectedRoute, setSelectedRoute] = useState("home"); // Set default route here
+  console.log(selectedRoute);
+  // Other state variables and functions related to your app
+
+  const handleNavigationClick = (route) => {
+    setSelectedRoute(route);
+  };
 
   const navigation = [
     {
-      href: "javascript:void(0)",
+      route: "home",
+      name: "Home",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={0.01}
+          className="w-5 h-5 fill-current"
+        >
+          <path d="M5 22h14a2 2 0 002-2v-9a1 1 0 00-.29-.71l-8-8a1 1 0 00-1.41 0l-8 8A1 1 0 003 11v9a2 2 0 002 2zm5-2v-5h4v5zm-5-8.59l7-7 7 7V20h-3v-5a2 2 0 00-2-2h-4a2 2 0 00-2 2v5H5z" />
+        </svg>
+      ),
+    },
+    {
+      route: "menu_edit",
       name: "Menu Preview",
       icon: (
         <svg
@@ -126,7 +128,7 @@ function Dashboard() {
       ),
     },
     {
-      href: "javascript:void(0)",
+      route: "menu_edit",
       name: "Edit Your Menu",
       icon: (
         <svg
@@ -146,7 +148,26 @@ function Dashboard() {
       ),
     },
     {
-      href: "javascript:void(0)",
+      route: "qr_links",
+      name: "QR and Links",
+      icon: (
+        <svg
+          fill="currentColor"
+          className="ml-0.5 mr-1"
+          viewBox="0 0 16 16"
+          height="1em"
+          width="1em"
+        >
+          <path d="M0 .5A.5.5 0 01.5 0h3a.5.5 0 010 1H1v2.5a.5.5 0 01-1 0v-3zm12 0a.5.5 0 01.5-.5h3a.5.5 0 01.5.5v3a.5.5 0 01-1 0V1h-2.5a.5.5 0 01-.5-.5zM.5 12a.5.5 0 01.5.5V15h2.5a.5.5 0 010 1h-3a.5.5 0 01-.5-.5v-3a.5.5 0 01.5-.5zm15 0a.5.5 0 01.5.5v3a.5.5 0 01-.5.5h-3a.5.5 0 010-1H15v-2.5a.5.5 0 01.5-.5zM4 4h1v1H4V4z" />
+          <path d="M7 2H2v5h5V2zM3 3h3v3H3V3zm2 8H4v1h1v-1z" />
+          <path d="M7 9H2v5h5V9zm-4 1h3v3H3v-3zm8-6h1v1h-1V4z" />
+          <path d="M9 2h5v5H9V2zm1 1v3h3V3h-3zM8 8v2h1v1H8v1h2v-2h1v2h1v-1h2v-1h-3V8H8zm2 2H9V9h1v1zm4 2h-1v1h-2v1h3v-2zm-4 2v-1H8v1h2z" />
+          <path d="M12 9h2V8h-2v1z" />
+        </svg>
+      ),
+    },
+    {
+      route: "plans",
       name: "Plans",
       icon: (
         <svg
@@ -242,25 +263,31 @@ function Dashboard() {
           <nav className="top-0 left-0 w-auto h-full border-r bg-white space-y-8 sm:w-80">
             <div class="flex flex-col h-full">
               <div className="h-20 flex items-center px-8">
-                <a href="javascript:void(0)" className="flex ml-[-5px] mt-2">
+                <button
+                  onClick={() => {
+                    setSelectedRoute("home");
+                  }}
+                  className="flex ml-[-5px] mt-2"
+                >
                   <img
                     src="https://res.cloudinary.com/dewy2csvc/image/upload/v1689628008/DigiText_zfdjoh.svg"
                     width={140}
                     className="mx-auto"
                   />
-                </a>
+                </button>
               </div>
               <div className="flex-1 flex flex-col h-full overflow-auto">
                 <ul className="px-4 text-sm font-medium flex-1">
                   {navigation.map((item, idx) => (
                     <li key={idx}>
-                      <a
+                      <button
                         href={item.href}
-                        className="flex items-center gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150"
+                        className="flex items-center w-full gap-x-2 text-gray-600 p-2 rounded-lg  hover:bg-gray-50 active:bg-gray-100 duration-150"
+                        onClick={() => handleNavigationClick(item.route)}
                       >
                         <div className="text-gray-500">{item.icon}</div>
                         {item.name}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -307,102 +334,27 @@ function Dashboard() {
       docked={isAbove800px}
     >
       <div
-        className="w-full h-[100vh] relative"
+        className="w-full h-[100vh]"
         style={{
           background:
             "linear-gradient(-10.6deg, rgba(251, 177, 56,0) 10.79%, rgba(219, 148, 31,0.1) 40.92%, rgba(219, 167, 81,0) 90.35%)",
         }}
       >
-        {restaurantId == null && (
-          <div className="w-full relative h-full flex flex-col justify-center items-center scale-90">
-            <div role="status">
-              <svg
-                aria-hidden="true"
-                class="w-8 h-8 mr-2 text-gray-200 animate-spin  fill-orange-400"
-                viewBox="0 0 100 101"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                  fill="currentFill"
-                />
-              </svg>
-              <span class="sr-only">Loading...</span>
-            </div>
-          </div>
+        {selectedRoute === "home" && (
+          <HomeDashboard setSelectedRoute={setSelectedRoute} />
         )}
-        {restaurantId && (
-          <div className="w-full relative h-full flex flex-col mt-[10vh] items-center scale-90">
-            <h3 className="text-gray-800 mb-16 text-3xl font-semibold sm:text-4xl">
-              Create Your Menu
-            </h3>
-            <Steps steps={steps} />
-            <div class="inline-flex items-center justify-center w-full"></div>
-            <CreateMenu
-              steps={steps}
-              handleSteps={handleSteps}
-              restaurantId={restaurantId}
-              user={user}
-              paidPlan={paidPlan}
-            />
-          </div>
+        {selectedRoute === "qr_links" &&
+          restaurantId != null &&
+          restaurantId != "" && <QRLinks restaurantId={restaurantId} />}
+        {selectedRoute === "menu_edit" && (
+          <CreateMenuDashboard
+            user={user}
+            restaurantId={restaurantId}
+            paidPlan={paidPlan}
+          />
         )}
-        {restaurantId == "" && (
-          <div className="w-full relative h-full flex flex-col justify-center items-center scale-90">
-            <div class="bg-white border border-gray-200  rounded-lg p-8 md:p-12 mb-8 scale-90">
-              <a
-                href="#"
-                class="bg-orange-300 text-gray-900 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md "
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  height="1em"
-                  width="1em"
-                  className="mr-1"
-                >
-                  <path fill="none" d="M0 0h24v24H0z" />
-                  <path d="M4.222 3.808l6.717 6.717-2.828 2.829-3.89-3.89a4 4 0 010-5.656zm10.046 8.338l-.854.854 7.071 7.071-1.414 1.414L12 14.415l-7.071 7.07-1.414-1.414 9.339-9.339c-.588-1.457.02-3.555 1.62-5.157 1.953-1.952 4.644-2.427 6.011-1.06s.892 4.058-1.06 6.01c-1.602 1.602-3.7 2.21-5.157 1.621z" />
-                </svg>
-                Create your first menu!
-              </a>
-              <h1 class="text-gray-900  text-3xl md:text-5xl font-extrabold mb-2">
-                Create your first menu with hassle-free process.
-              </h1>
-              <p class="text-lg font-normal text-gray-500 mb-6">
-                Get started by clicking the 'Create' button to begin the
-                creation process.
-              </p>
-              <button
-                onClick={() => {
-                  createMenuId();
-                }}
-                class="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center text-white rounded-lg bg-orange-400 hover:bg-orange-300 "
-              >
-                Create
-                <svg
-                  class="w-3.5 h-3.5 ml-2"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 10"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M1 5h12m0 0L9 1m4 4L9 9"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
+        {selectedRoute === "plans" && (
+          <Plans setSelectedRoute={setSelectedRoute} />
         )}
         <CheckUser
           user={user}

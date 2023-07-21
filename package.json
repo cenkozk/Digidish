@@ -23,6 +23,7 @@
     "flowbite": "^1.7.0",
     "framer-motion": "^10.12.22",
     "nanoid": "^4.0.2",
+    "qr-code-styling": "^1.6.0-rc.1",
     "react": ">=16.8.0",
     "react-cropper": "^2.3.3",
     "react-dom": ">=16.8.0",
