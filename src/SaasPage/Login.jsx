@@ -10,7 +10,7 @@ function Login() {
     console.log(data);
 
     if (data.session != null) {
-      console.log("Already signed up!");
+      console.log("Already signed up!!");
       navigate("/dashboard");
       return;
     }
