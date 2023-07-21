@@ -1,7 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
-import Pricing from "./SaasPage/Pricing";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LandingPage from "./SaasPage/LandingPage";
 import Login from "./SaasPage/Login";
