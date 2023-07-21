@@ -83,7 +83,7 @@ function QRLinks(props) {
         dataUri: true, // Set this to true to get the data URL
       })
       .catch((error) => {
-        console.error("Error generating QR code:", error);
+        console.error("Error generating Qr code:", error);
       });
   };
   return (
