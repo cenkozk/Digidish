@@ -11,7 +11,6 @@ const Categories = ({
   setNewCategory,
   handleCategoryNameChange,
 }) => {
-  console.log(categories);
   return (
     <div className="flex w-auto flex-col items-center justify-center">
       <div className="mb-6 flex items-center justify-center flex-col">
