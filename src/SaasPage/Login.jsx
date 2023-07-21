@@ -18,7 +18,7 @@ function Login() {
     try {
       const { user, session, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        redirectTo: "/dashboard", // Redirect to the dashboard after successful login
+        redirectTo: `${window.location.origin}/dashboard`, // Redirect to the dashboard after successful login
       });
 
       if (error) {
