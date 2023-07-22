@@ -6,17 +6,19 @@ function Login() {
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
-    const { data, error } = await supabase.auth.getSession();
-    console.log(data);
+    const user = await supabase.auth.getUser();
 
-    if (data.session != null) {
-      console.log("Already signed up!!");
+    console.log(user);
+
+    if (user != null) {
+      console.log("Already signed in:", user);
+      // Navigate to the dashboard or any other authenticated page
       navigate("/dashboard");
       return;
     }
 
     try {
-      const { user, session, error } = await supabase.auth.signInWithOAuth({
+      const { user, session, error1 } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: "https://digidish.vercel.app/dashboard",
@@ -24,11 +26,11 @@ function Login() {
       });
 
       if (error) {
-        console.log(error);
+        console.log(error1);
         return;
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error2) {
+      console.log(error2);
     }
   };
 
