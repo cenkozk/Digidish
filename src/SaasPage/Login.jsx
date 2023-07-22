@@ -18,6 +18,9 @@ function Login() {
     try {
       const { user, session, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
+        options: {
+          redirectTo: "https://digidish.vercel.app/dashboard",
+        },
       });
 
       if (error) {

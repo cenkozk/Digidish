@@ -13,6 +13,7 @@
     "@cloudinary/react": "^1.11.2",
     "@cloudinary/url-gen": "^1.10.1",
     "@headlessui/react": "^1.7.15",
+    "@supabase/gotrue-js": "^2.45.0",
     "@supabase/supabase-js": "^2.26.0",
     "antd": "^5.6.4",
     "axios": "^1.4.0",
