@@ -1,21 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../Supabase";
+import Cookies from "js-cookie";
 
 function Login() {
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
-    const user = await supabase.auth.getUser();
+    const refreshToken = Cookies.get("sb-refresh-token");
+    const accessToken = Cookies.get("sb-access-token");
 
-    console.log(user);
+    console.log(refreshToken, accessToken);
 
-    if (user != null) {
+    if (refreshToken && accessToken) {
+      await supabase.auth.setSession({
+        refresh_token: refreshToken,
+        access_token: accessToken,
+      });
       console.log("Already signed in:", user);
       // Navigate to the dashboard or any other authenticated page
       navigate("/dashboard");
       return;
+    } else {
+      // make sure you handle this case!
+      console.log(new Error("User is not authenticated."));
     }
+
+    // returns user information
+    await supabase.auth.getUser();
 
     try {
       const { user, session, error1 } = await supabase.auth.signInWithOAuth({
