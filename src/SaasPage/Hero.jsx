@@ -1,6 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, animateScroll as scroll } from "react-scroll";
 import { useNavigate } from "react-router-dom";
+import { TypeAnimation } from "react-type-animation";
+import { motion } from "framer-motion";
+
+const AnimatedGradientBackground = () => {
+  return (
+    <motion.div
+      className="absolute inset-0 blur-xl h-[580px]"
+      style={{
+        background:
+          "linear-gradient(143.6deg, rgba(251, 177, 56,0) 20.79%, rgba(219, 148, 31,0.2) 40.92%, rgba(219, 167, 81,0) 70.35%)",
+      }}
+      animate={{
+        rotate: [-15, 15, -15],
+        backgroundPosition: ["20% 50%", "40% 50%", "20% 50%"],
+      }} // Rotate back and forth between -30 and 30 degrees
+      transition={{
+        duration: 10,
+        repeat: Infinity,
+        repeatType: "reverse",
+        ease: "easeInOut",
+      }} // Set animation duration and repeat
+    ></motion.div>
+  );
+};
 
 function Hero() {
   const [state, setState] = useState(false);
@@ -72,13 +96,7 @@ function Hero() {
 
   return (
     <div className="relative flex justify-center items-center">
-      <div
-        className="absolute inset-0 blur-xl h-[580px]"
-        style={{
-          background:
-            "linear-gradient(143.6deg, rgba(251, 177, 56,0) 20.79%, rgba(219, 148, 31,0.2) 40.92%, rgba(219, 167, 81,0) 70.35%)",
-        }}
-      ></div>
+      <AnimatedGradientBackground />
       <div className="relative">
         <header>
           <div className={`md:hidden ${state ? "mx-2 pb-5" : "hidden"}`}>
@@ -148,8 +166,22 @@ function Hero() {
             <div className="flex-none space-y-5 max-w-xl">
               <h1 className="text-4xl text-gray-800 font-extrabold sm:text-5xl z-20">
                 Ignite Your Restaurant's Potential with{" "}
-                <span class="relative">
-                  <span class="text-orange-400 z-20 relative"> Digidish </span>
+                <span class="relative clas">
+                  <TypeAnimation
+                    sequence={[
+                      // Same substring at the start will only be typed out once, initially
+                      "Digidish",
+                      5000, // wait 1s before replacing "Mice" with "Hamsters"
+                    ]}
+                    wrapper="span"
+                    speed={1}
+                    className=" text-orange-400"
+                    style={{
+                      fontSize: "1em",
+                      display: "inline-block",
+                    }}
+                    repeat={Infinity}
+                  />
                 </span>
                 for Free!
               </h1>

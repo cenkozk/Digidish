@@ -6,21 +6,30 @@ import imageCompression from "browser-image-compression"; // Import image compre
 import BusinessInfo from "./BusinessInfo";
 import { AnimatePresence, motion } from "framer-motion";
 import { nanoid } from "nanoid";
+import { useNavigate } from "react-router-dom";
 
 function CreateMenu(steps) {
   // Cloudinary configuration
   const cloudName = import.meta.env.VITE_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_PRESET_NAME; // Replace with your Cloudinary upload preset
+  const navigate = useNavigate();
 
   const [restaurantMenu, setRestaurantMenu] = useState({
     businessName: "",
     description: "",
+    restaurantLogo: "",
+    restaurantBackgroundImage: "",
     categories: [],
   });
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [imageUploadingAnimations, setImageUploadingAnimations] = useState([]);
+  const [
+    categoryImageUploadingAnimations,
+    setCategoryImageUploadingAnimations,
+  ] = useState([]);
+
   const [isFetching, setIsFetching] = useState(false);
 
   async function fetchRestaurantMenu(restaurantId) {
@@ -59,8 +68,6 @@ function CreateMenu(steps) {
     userId,
     paidPlan
   ) {
-    console.log(restaurantId, menuJson, userId, paidPlan);
-    console.log(steps);
     try {
       // Check if the restaurant exists in the database
       setImageUploadingAnimations((prevAnimations) => [
@@ -98,6 +105,7 @@ function CreateMenu(steps) {
 
         if (updateError) {
           console.error("Error updating restaurant menu:", updateError);
+          navigate("/error");
           return;
         }
 
@@ -122,8 +130,10 @@ function CreateMenu(steps) {
       }
 
       console.log("User data updated successfully.");
+      steps.setSelectedRoute("qr_links");
     } catch (error) {
       console.error("Error uploading restaurant menu:", error);
+      steps.setSelectedRoute("home");
     }
   }
 
@@ -191,6 +201,17 @@ function CreateMenu(steps) {
     });
   };
 
+  const handleDishPriceChange = (categoryIndex, dishIndex, value) => {
+    setRestaurantMenu((prevMenu) => {
+      const updatedCategories = [...prevMenu.categories];
+      updatedCategories[categoryIndex].dishes[dishIndex].price = value;
+
+      return { ...prevMenu, categories: updatedCategories };
+    });
+  };
+
+  /////////////////////////////////////////////////////////////////
+
   const handleImageUpload = async (event, categoryIndex, dishIndex) => {
     var file = event.target.files[0];
     setImageUploadingAnimations((prevAnimations) => [
@@ -249,6 +270,162 @@ function CreateMenu(steps) {
     }
   };
 
+  const handleImageUploadCategory = async (event, category, index) => {
+    console.log(event.target.files[0]);
+    var file = event.target.files[0];
+    setCategoryImageUploadingAnimations((prevAnimations) => [
+      ...prevAnimations,
+      index,
+    ]);
+
+    file = await resizeAndCompressImage(file);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+        const publicId = data.public_id;
+        const deleteToken = data.delete_token;
+
+        setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );
+
+        setRestaurantMenu((prevMenu) => {
+          const updatedCategories = [...prevMenu.categories];
+          updatedCategories[index].image_url = imageUrl;
+          updatedCategories[index].public_id = publicId;
+          updatedCategories[index].delete_token = deleteToken;
+
+          return { ...prevMenu, categories: updatedCategories };
+        });
+      } else {
+        console.error("Error uploading image:", response.status);
+        setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  const handleImageUploadLogo = async (event) => {
+    console.log(event.target.files[0]);
+    var file = event.target.files[0];
+    /*setCategoryImageUploadingAnimations((prevAnimations) => [
+      ...prevAnimations,
+      index,
+    ]);*/
+
+    file = await resizeAndCompressImage(file);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+        const publicId = data.public_id;
+        const deleteToken = data.delete_token;
+
+        /*((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );*/
+
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          logo: {
+            image_url: imageUrl,
+            public_id: publicId,
+            delete_token: deleteToken,
+          },
+        }));
+      } else {
+        console.error("Error uploading image:", response.status);
+        /*setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );*/
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
+  const handleImageUploadBackground = async (event) => {
+    console.log(event.target.files[0]);
+    var file = event.target.files[0];
+    /*setCategoryImageUploadingAnimations((prevAnimations) => [
+      ...prevAnimations,
+      index,
+    ]);*/
+
+    file = await resizeAndCompressImage(file);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+        const publicId = data.public_id;
+        const deleteToken = data.delete_token;
+
+        /*((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );*/
+
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          background: {
+            image_url: imageUrl,
+            public_id: publicId,
+            delete_token: deleteToken,
+          },
+        }));
+      } else {
+        console.error("Error uploading image:", response.status);
+        /*setImageUploadingAnimations((prevAnimations) =>
+          prevAnimations.filter((animationIndex) => animationIndex !== index)
+        );*/
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
+
   async function resizeAndCompressImage(file) {
     // Define the desired width and height for the resized image
     const maxWidth = 240;
@@ -296,7 +473,7 @@ function CreateMenu(steps) {
     ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
     // Get the data URL of the resized image
-    const resizedImageUrl = canvas.toDataURL("image/jpeg", 0.8); // Adjust the image quality as needed (0.8 is a recommended value)
+    const resizedImageUrl = canvas.toDataURL("image/png", 0.8); // Adjust the image quality as needed (0.8 is a recommended value)
 
     // Return the resized image data URL
     console.log("Resizing and compressing completed.");
@@ -340,6 +517,129 @@ function CreateMenu(steps) {
 
           return { ...prevMenu, categories: updatedCategories };
         });
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
+
+  const handleCategoryDeleteImage = async (categoryIndex) => {
+    const publicId = restaurantMenu.categories[categoryIndex].public_id;
+    const deleteToken = restaurantMenu.categories[categoryIndex].delete_token;
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/delete_by_token`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token: deleteToken, public_id: publicId }),
+        }
+      );
+
+      if (response.ok) {
+        setRestaurantMenu((prevMenu) => {
+          const updatedCategories = [...prevMenu.categories];
+          updatedCategories[categoryIndex].image_url = "";
+          updatedCategories[categoryIndex].public_id = "";
+          updatedCategories[categoryIndex].delete_token = "";
+
+          return { ...prevMenu, categories: updatedCategories };
+        });
+      } else {
+        console.error("Error deleting image:", response.status);
+        setRestaurantMenu((prevMenu) => {
+          const updatedCategories = [...prevMenu.categories];
+          updatedCategories[categoryIndex].image_url = "";
+          updatedCategories[categoryIndex].public_id = "";
+          updatedCategories[categoryIndex].delete_token = "";
+
+          return { ...prevMenu, categories: updatedCategories };
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
+
+  const handleLogoDeleteImage = async () => {
+    const publicId = restaurantMenu.logo.public_id;
+    const deleteToken = restaurantMenu.logo.delete_token;
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/delete_by_token`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token: deleteToken, public_id: publicId }),
+        }
+      );
+
+      if (response.ok) {
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          logo: {
+            image_url: "",
+            public_id: "",
+            delete_token: "",
+          },
+        }));
+      } else {
+        console.error("Error deleting image:", response.status);
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          logo: {
+            image_url: "",
+            public_id: "",
+            delete_token: "",
+          },
+        }));
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  };
+
+  const handleBackgroundDeleteImage = async () => {
+    const publicId = restaurantMenu.background.public_id;
+    const deleteToken = restaurantMenu.background.delete_token;
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/delete_by_token`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token: deleteToken, public_id: publicId }),
+        }
+      );
+
+      if (response.ok) {
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          background: {
+            image_url: "",
+            public_id: "",
+            delete_token: "",
+          },
+        }));
+      } else {
+        console.error("Error deleting image:", response.status);
+        setRestaurantMenu((prevMenu) => ({
+          ...prevMenu,
+          background: {
+            image_url: "",
+            public_id: "",
+            delete_token: "",
+          },
+        }));
       }
     } catch (error) {
       console.error("Error deleting image:", error);
@@ -391,6 +691,14 @@ function CreateMenu(steps) {
     });
   };
 
+  const handleCheckboxChange = (categoryIndex, dishIndex, isBig) => {
+    setRestaurantMenu((prevMenu) => {
+      const updatedCategories = [...prevMenu.categories];
+      updatedCategories[categoryIndex].dishes[dishIndex].isBig = isBig;
+      return { ...prevMenu, categories: updatedCategories };
+    });
+  };
+
   //////////////////////////////////////////////////////
 
   const isStepValid = (step) => {
@@ -438,6 +746,36 @@ function CreateMenu(steps) {
 
   ///////////////////////////////////////////////////////
 
+  const handleMoveDishUp = (categoryIndex, dishIndex) => {
+    if (dishIndex > 0) {
+      setRestaurantMenu((prevMenu) => {
+        const updatedCategories = [...prevMenu.categories];
+        const temp = updatedCategories[categoryIndex].dishes[dishIndex];
+        updatedCategories[categoryIndex].dishes[dishIndex] =
+          updatedCategories[categoryIndex].dishes[dishIndex - 1];
+        updatedCategories[categoryIndex].dishes[dishIndex - 1] = temp;
+        return { ...prevMenu, categories: updatedCategories };
+      });
+    }
+  };
+
+  const handleMoveDishDown = (categoryIndex, dishIndex) => {
+    const categoryLength =
+      restaurantMenu.categories[categoryIndex].dishes.length;
+    if (dishIndex < categoryLength - 1) {
+      setRestaurantMenu((prevMenu) => {
+        const updatedCategories = [...prevMenu.categories];
+        const temp = updatedCategories[categoryIndex].dishes[dishIndex];
+        updatedCategories[categoryIndex].dishes[dishIndex] =
+          updatedCategories[categoryIndex].dishes[dishIndex + 1];
+        updatedCategories[categoryIndex].dishes[dishIndex + 1] = temp;
+        return { ...prevMenu, categories: updatedCategories };
+      });
+    }
+  };
+
+  ////////////////////////////////////////////////////////////
+
   return (
     <div>
       {!isFetching ? (
@@ -454,6 +792,10 @@ function CreateMenu(steps) {
                 <BusinessInfo
                   onInputChange={handleInputChange}
                   restaurantMenu={restaurantMenu}
+                  handleImageUploadLogo={handleImageUploadLogo}
+                  handleImageUploadBackground={handleImageUploadBackground}
+                  handleLogoDeleteImage={handleLogoDeleteImage}
+                  handleBackgroundDeleteImage={handleBackgroundDeleteImage}
                 />
               </motion.div>
             )}
@@ -474,6 +816,8 @@ function CreateMenu(steps) {
                   selectedCategory={selectedCategory}
                   setNewCategory={setNewCategory}
                   handleCategoryNameChange={handleCategoryNameChange}
+                  handleImageUploadCategory={handleImageUploadCategory}
+                  handleCategoryDeleteImage={handleCategoryDeleteImage}
                 />
               </motion.div>
             )}
@@ -485,7 +829,7 @@ function CreateMenu(steps) {
                 exit={{ opacity: 0, scale: 0.7 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className=" w-auto flex flex-col items-center justify-center ">
+                <div className=" w-auto h- flex flex-col items-center justify-center ">
                   <div className="mb-6">
                     <label
                       htmlFor="categories"
@@ -522,13 +866,12 @@ function CreateMenu(steps) {
                           (dish, dishIndex) => (
                             <motion.div
                               key={dishIndex}
-                              className="flex flex-col items-center justify-center gap-6"
+                              className="flex flex-col items-center justify-center gap-6 border-none shadow-lg bg-white p-6 rounded-lg mb-6"
                               initial={{ opacity: 0, scale: 0.7 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.7 }}
                               transition={{ duration: 0.3 }}
                             >
-                              <hr className="w-full" />
                               <div className="flex flex-auto gap-10">
                                 <div className="col-span-2">
                                   <label
@@ -574,8 +917,52 @@ function CreateMenu(steps) {
                                     }
                                   />
                                 </div>
+                                <div>
+                                  <label
+                                    htmlFor={`dishDescription_${selectedCategory}_${dishIndex}`}
+                                    className="block mb-2 text-sm font-medium text-gray-900 pt-3"
+                                  >
+                                    Price
+                                  </label>
+                                  <input
+                                    type="text"
+                                    id={`dishDescription_${selectedCategory}_${dishIndex}`}
+                                    className="w-16 p-2.5  bg-transparent border outline-none bg-white rounded-md"
+                                    placeholder="12.99"
+                                    value={dish.price}
+                                    defaultValue={0}
+                                    onChange={(e) =>
+                                      handleDishPriceChange(
+                                        selectedCategory,
+                                        dishIndex,
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </div>
                               </div>
-
+                              <div class="flex items-center mr-auto">
+                                <input
+                                  id="default-checkbox"
+                                  type="checkbox"
+                                  value=""
+                                  checked={dish.isBig}
+                                  className="w-4 h-4 text-orange-400 bg-gray-200 border-gray-300 rounded focus:ring-orange-400 "
+                                  onChange={(e) =>
+                                    handleCheckboxChange(
+                                      selectedCategory,
+                                      dishIndex,
+                                      e.target.checked
+                                    )
+                                  }
+                                />
+                                <label
+                                  for="default-checkbox"
+                                  class="ml-2 text-sm font-medium text-gray-900 "
+                                >
+                                  Make bigger
+                                </label>
+                              </div>
                               <div className="flex w-full flex-row gap-2 items-center justify-center">
                                 <div className="flex flex-row justify-center items-center mb-6 gap-2">
                                   <label
@@ -677,23 +1064,73 @@ function CreateMenu(steps) {
                                     </div>
                                   )}
                                 </div>
-                                <button
-                                  onClick={() =>
-                                    handleDeleteDish(
-                                      selectedCategory,
-                                      dishIndex
-                                    )
-                                  }
-                                  className="px-2 py-2 text-white bg-red-500 rounded-lg duration-150 hover:bg-red-400 active:bg-red-500 ml-auto"
-                                >
-                                  <svg
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    className="w-5 h-5"
+                                <div className="ml-auto flex flex-row gap-2">
+                                  <button
+                                    onClick={() =>
+                                      handleMoveDishUp(
+                                        selectedCategory,
+                                        dishIndex
+                                      )
+                                    }
+                                    className="p-1 text-white bg-gray-400 rounded-lg duration-150 hover:bg-gray-300 active:bg-gray-400 ml-auto"
+                                    disabled={dishIndex === 0}
                                   >
-                                    <path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12M8 9h8v10H8V9m7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z" />
-                                  </svg>
-                                </button>
+                                    <svg
+                                      fill="currentColor"
+                                      viewBox="0 0 16 16"
+                                      className="w-5 h-5"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M8 12a.5.5 0 00.5-.5V5.707l2.146 2.147a.5.5 0 00.708-.708l-3-3a.5.5 0 00-.708 0l-3 3a.5.5 0 10.708.708L7.5 5.707V11.5a.5.5 0 00.5.5z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleMoveDishDown(
+                                        selectedCategory,
+                                        dishIndex
+                                      )
+                                    }
+                                    className="p-1 text-white bg-gray-400 rounded-lg duration-150 hover:bg-gray-300 active:bg-gray-400 ml-auto"
+                                    disabled={
+                                      dishIndex ===
+                                      restaurantMenu.categories[
+                                        selectedCategory
+                                      ].dishes.length -
+                                        1
+                                    }
+                                  >
+                                    <svg
+                                      fill="currentColor"
+                                      viewBox="0 0 16 16"
+                                      className="w-5 h-5 rotate-180"
+                                    >
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M8 12a.5.5 0 00.5-.5V5.707l2.146 2.147a.5.5 0 00.708-.708l-3-3a.5.5 0 00-.708 0l-3 3a.5.5 0 10.708.708L7.5 5.707V11.5a.5.5 0 00.5.5z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteDish(
+                                        selectedCategory,
+                                        dishIndex
+                                      )
+                                    }
+                                    className="px-2 py-2 text-white bg-red-500 rounded-lg duration-150 hover:bg-red-400 active:bg-red-500 ml-auto"
+                                  >
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
+                                      className="w-5 h-5"
+                                    >
+                                      <path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12M8 9h8v10H8V9m7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z" />
+                                    </svg>
+                                  </button>
+                                </div>
                               </div>
                             </motion.div>
                           )
@@ -839,9 +1276,9 @@ function CreateMenu(steps) {
               steps.steps.currentStep == 3 && (
                 <label
                   htmlFor="categoryInput"
-                  className="block mt-2 h-full text-sm font-medium text-red-400 "
+                  className="block mt-4 h-full text-sm font-medium text-red-400 "
                 >
-                  Add a Dish, and name each Dish.
+                  Add a Dish, and name each Dish / Dish image is optional
                 </label>
               )}
             <div className="flex flex-row gap-10 mt-10">
@@ -869,7 +1306,7 @@ function CreateMenu(steps) {
           </div>
         </div>
       ) : (
-        <div role="status" className="mt-24">
+        <div role="status" className="mt-12">
           <svg
             aria-hidden="true"
             class="w-8 h-8 mr-2 text-gray-200 animate-spin  fill-orange-400"

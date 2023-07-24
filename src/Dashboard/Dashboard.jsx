@@ -3,7 +3,7 @@ import { supabase } from "../Supabase";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "react-sidebar";
 import BusinessInfo from "../components/BusinessInfo";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import CreateMenu from "../components/CreateMenu";
 import Steps from "./Steps";
 import CheckUser from "./CheckUser";
@@ -13,37 +13,28 @@ import HomeDashboard from "./HomeDashboard";
 import QRLinks from "./QRLinks";
 import Plans from "./Plans";
 
-function Dashboard() {
+function Dashboard(props) {
   const navigate = useNavigate();
-  const [session, setSession] = useState({});
-  const [user, setUser] = useState({
-    user_metadata: {
-      avatar_url: "",
-      email: "",
-      email_verified: null,
-      full_name: "",
-      iss: "",
-      name: "",
-      picture: "",
-      provider_id: "",
-      sub: "",
-    },
-  });
   const [restaurantId, setRestaurantId] = useState(null);
   const [paidPlan, setPaidPlan] = useState(null);
   const [sidebar, setSidebar] = useState(false);
 
   useEffect(() => {
-    async function session() {
-      const { data, error } = await supabase.auth.getSession();
-      if (data.session == null) {
-        navigate("/login");
-      } else {
-        setSession(data);
-        setUser(data.session.user);
+    // Listen for changes in authentication state
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN" && session?.user?.id) {
+          console.log("Already signed in:", session.user);
+          props.setUser(session.user);
+          navigate("/dashboard");
+        }
       }
-    }
-    session();
+    );
+
+    // Clean up the listener when the component is unmounted
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const [isAbove800px, setIsAbove800px] = useState(window.innerWidth > 800);
@@ -308,12 +299,18 @@ function Dashboard() {
                   <div className="py-4 px-4 border-t">
                     <div className="flex items-center gap-x-4">
                       <img
-                        src={user.user_metadata.picture}
+                        src={
+                          props.user.user_metadata.picture
+                            ? props.user.user_metadata.picture
+                            : "https://res.cloudinary.com/dewy2csvc/image/upload/v1690121449/abstract-user-flat-3_b4x6ye.svg"
+                        }
                         className="w-12 h-12 rounded-full"
                       />
                       <div>
                         <span className="block text-gray-700 text-sm font-semibold">
-                          {user.user_metadata.name}
+                          {props.user.user_metadata.name
+                            ? props.user.user_metadata.name
+                            : props.user.email}
                         </span>
                         <a
                           href="javascript:void(0)"
@@ -333,35 +330,73 @@ function Dashboard() {
       open={sidebar}
       docked={isAbove800px}
     >
-      <div
-        className="w-full h-[100vh]"
+      <motion.div
+        className="w-full h-fit min-h-full"
         style={{
           background:
             "linear-gradient(-10.6deg, rgba(251, 177, 56,0) 10.79%, rgba(219, 148, 31,0.1) 40.92%, rgba(219, 167, 81,0) 90.35%)",
         }}
       >
         {selectedRoute === "home" && (
-          <HomeDashboard setSelectedRoute={setSelectedRoute} />
+          <motion.div
+            className="h-full w-full"
+            key="dashboard-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <HomeDashboard setSelectedRoute={setSelectedRoute} />
+          </motion.div>
         )}
-        {selectedRoute === "qr_links" &&
-          restaurantId != null &&
-          restaurantId != "" && <QRLinks restaurantId={restaurantId} />}
+        {selectedRoute === "qr_links" && (
+          <motion.div
+            className="h-full w-full"
+            key="dashboard-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <QRLinks restaurantId={restaurantId} />
+          </motion.div>
+        )}
         {selectedRoute === "menu_edit" && (
-          <CreateMenuDashboard
-            user={user}
-            restaurantId={restaurantId}
-            paidPlan={paidPlan}
-          />
+          <motion.div
+            className="h-full w-full"
+            key="dashboard-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <CreateMenuDashboard
+              className="block"
+              user={props.user}
+              restaurantId={restaurantId}
+              paidPlan={paidPlan}
+              setSelectedRoute={setSelectedRoute}
+            />
+          </motion.div>
         )}
         {selectedRoute === "plans" && (
-          <Plans setSelectedRoute={setSelectedRoute} />
+          <motion.div
+            key="dashboard-4"
+            className="h-full w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Plans setSelectedRoute={setSelectedRoute} />
+          </motion.div>
         )}
         <CheckUser
-          user={user}
+          user={props.user}
           onRestaurantIdChange={setRestaurantId}
           onPaidPlanChange={setPaidPlan}
         />
-      </div>
+      </motion.div>
     </Sidebar>
   );
 }

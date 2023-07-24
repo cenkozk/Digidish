@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const FaqsCard = (props) => {
   const answerElRef = useRef();
@@ -90,9 +91,9 @@ function HomeDashboard(props) {
   ];
 
   return (
-    <div className="flex flex-col h-auto w-full gap-0 ">
+    <motion.div className="flex flex-col h-auto w-full my-10">
       <div className="">
-        <div className=" flex h-full flex-row justify-center items-center scale-90">
+        <div className="h-auto w-full flex-row mr-auto scale-90">
           <div class="bg-white border border-gray-200  rounded-lg p-8 scale-90">
             <button
               onClick={() => {
@@ -144,7 +145,7 @@ function HomeDashboard(props) {
             </button>
           </div>
         </div>
-        <div className=" flex flex-col justify-center items-center scale-90 pb-6">
+        <div className="h-auto w-full flex-row mr-auto scale-90">
           <div class="bg-white border border-gray-200  rounded-lg p-8  scale-90">
             <button
               onClick={() => {
@@ -201,7 +202,7 @@ function HomeDashboard(props) {
           </div>
         </div>
       </div>
-      <section className="leading-relaxed max-w-screen-xl p-10 mx-auto px-4 md:px-8 bg-white border rounded-lg mb-6">
+      <section className="leading-relaxed h-auto w-full flex-row mr-auto scale-90 max-w-screen-xl p-10 mx-auto px-4 md:px-8 bg-white border rounded-lg mb-6">
         <div className="space-y-3 text-center">
           <h1 className="text-3xl text-gray-800 font-semibold">
             Frequently Asked Questions
@@ -217,7 +218,7 @@ function HomeDashboard(props) {
           ))}
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
 

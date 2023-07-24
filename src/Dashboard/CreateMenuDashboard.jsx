@@ -9,11 +9,15 @@ function CreateMenuDashboard(user) {
     currentStep: 1,
   });
 
-  console.log(user);
   const [restaurantId, setRestaurantId] = useState(null);
   const [paidPlan, setPaidPlan] = useState(null);
 
+  console.log(restaurantId);
+
   useEffect(() => {
+    if (restaurantId != null) {
+      return;
+    }
     if (user.restaurantId != null) {
       setRestaurantId(user.restaurantId);
     }
@@ -39,8 +43,8 @@ function CreateMenuDashboard(user) {
   };
 
   return (
-    <div className=" justify-center items-center flex w-full h-full">
-      {restaurantId == null && (
+    <div className=" items-center flex w-full h-full">
+      {restaurantId == "not_set" && (
         <div className="w-full relative h-full flex flex-col justify-center items-center scale-90">
           <div role="status">
             <svg
@@ -64,18 +68,18 @@ function CreateMenuDashboard(user) {
         </div>
       )}
       {restaurantId && (
-        <div className="w-full relative h-full flex flex-col mt-[10vh] items-center scale-90">
+        <div className="w-full h-full flex flex-col mt-16 items-center scale-90">
           <h3 className="text-gray-800 mb-16 text-3xl font-semibold sm:text-4xl">
             Create Your Menu
           </h3>
           <Steps steps={steps} />
-          <div class="inline-flex items-center justify-center w-full"></div>
           <CreateMenu
             steps={steps}
             handleSteps={handleSteps}
             restaurantId={restaurantId}
             user={user}
             paidPlan={paidPlan}
+            setSelectedRoute={user.setSelectedRoute}
           />
         </div>
       )}
