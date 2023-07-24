@@ -82,7 +82,7 @@ function Login(props) {
                 variables: {
                   default: {
                     colors: {
-                      brand: "transarent",
+                      brand: "transparent",
                       brandAccent: "orange",
                     },
                   },
