@@ -77,9 +77,7 @@ function Login(props) {
                 theme: ThemeSupa,
                 className: {
                   anchor: "",
-                  button:
-                    "hover:bg-gray-200 outline-none rounded-md ring-transparent border-gray-200 active:border-none",
-                  input: "bg-white border-gray-200",
+                  button: "supalogin_button",
                 },
                 variables: {
                   default: {

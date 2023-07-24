@@ -21,3 +21,11 @@
   /* change div to reference your elements you put in <Masonry> */
   margin-bottom: 30px;
 }
+
+.supalogin_button {
+  color: black;
+}
+
+.supalogin_button:hover {
+  color: white;
+}
