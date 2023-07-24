@@ -1,48 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../Supabase";
-import Cookies from "js-cookie";
 
 function Login() {
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
-    const refreshToken = Cookies.get("sb-refresh-token");
-    const accessToken = Cookies.get("sb-access-token");
+    const { data, error } = await supabase.auth.getSession();
+    console.log(data);
 
-    console.log(refreshToken, accessToken);
-
-    if (refreshToken && accessToken) {
-      await supabase.auth.setSession({
-        refresh_token: refreshToken,
-        access_token: accessToken,
-      });
-      console.log("Already signed in:", user);
-      // Navigate to the dashboard or any other authenticated page
+    if (data.session != null) {
+      console.log("Already signed up!!");
       navigate("/dashboard");
       return;
-    } else {
-      // make sure you handle this case!
-      console.log(new Error("User is not authenticated."));
     }
 
-    // returns user information
-    await supabase.auth.getUser();
-
     try {
-      const { user, session, error1 } = await supabase.auth.signInWithOAuth({
+      const { user, session, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: {
-          redirectTo: "https://digidish.vercel.app/dashboard",
-        },
       });
 
       if (error) {
-        console.log(error1);
+        console.log(error);
         return;
       }
-    } catch (error2) {
-      console.log(error2);
+    } catch (error) {
+      console.log(error);
     }
   };
 
