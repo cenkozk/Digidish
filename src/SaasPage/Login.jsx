@@ -78,7 +78,7 @@ function Login(props) {
                 className: {
                   anchor: "",
                   button:
-                    "bg-white hover:bg-gray-200 text-gray-900 outline-none rounded-md ring-transparent border-gray-200 active:border-none",
+                    "bg-white hover:bg-gray-200 text-gray-800 outline-none rounded-md ring-transparent border-gray-200 active:border-none",
                   input: "bg-white border-gray-200",
                 },
                 variables: {
