@@ -78,7 +78,7 @@ function Login(props) {
                 className: {
                   anchor: "",
                   button:
-                    " hover:bg-gray-200 text-gray-800 outline-none rounded-md ring-transparent border-gray-200 active:border-none",
+                    "hover:bg-gray-200 outline-none rounded-md ring-transparent border-gray-200 active:border-none",
                   input: "bg-white border-gray-200",
                 },
                 variables: {
@@ -91,6 +91,7 @@ function Login(props) {
                 },
               }}
               redirectTo="https://digidish.vercel.app/dashboard"
+              providers={[]}
             />
           </div>
         </div>
