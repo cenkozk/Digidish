@@ -75,6 +75,9 @@ function Login(props) {
               supabaseClient={supabase}
               appearance={{
                 theme: ThemeSupa,
+                style: {
+                  button: { color: "black" },
+                },
                 className: {
                   anchor: "",
                   button: "supalogin_button",
