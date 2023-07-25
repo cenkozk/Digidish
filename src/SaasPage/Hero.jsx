@@ -242,8 +242,8 @@ function Hero() {
             <div className="flex-1 hidden md:block">
               {/* Replace with your image */}
               <img
-                src="https://res.cloudinary.com/dewy2csvc/image/upload/v1689629628/undraw_mobile_interface_re_1vv9_o5sjkw.svg"
-                className=" max-w-sm"
+                src="https://res.cloudinary.com/dewy2csvc/image/upload/v1690281679/phones_vcztgi.png"
+                className=" max-w-[40rem] -mt-10"
               />
             </div>
           </div>
