@@ -5,6 +5,7 @@ import Pricing from "./Pricing";
 import ScrollUpButton from "../Menu/ScrollUpButton";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
+import QRExample from "./QRExample";
 
 const ScrollAnimatedComponent = ({ children }) => {
   const [ref, inView] = useInView({
@@ -27,6 +28,9 @@ function LandingPage() {
   return (
     <div>
       <Hero />
+      <ScrollAnimatedComponent>
+        <QRExample />
+      </ScrollAnimatedComponent>
       <div id="features">
         <ScrollAnimatedComponent>
           <Features />

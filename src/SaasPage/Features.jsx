@@ -76,13 +76,7 @@ function Features() {
               Unleash the power of Digidish with these outstanding features.
             </p>
           </div>
-          <div
-            className="absolute inset-0 max-w-xs mx-auto h-44 blur-[118px]"
-            style={{
-              background:
-                "linear-gradient(152.92deg, rgba(192, 132, 252, 0.2) 4.54%, rgba(232, 121, 249, 0.26) 34.2%, rgba(192, 132, 252, 0.1) 77.55%)",
-            }}
-          ></div>
+          <div className="absolute inset-0 max-w-xs mx-auto h-44 blur-[118px]"></div>
         </div>
         <div className="relative mt-12">
           <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
